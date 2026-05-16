@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUserStore } from '../store/userStore';
 import { getPipStage } from '../constants/pip';
-import type { User, MarketId, League } from '../types';
+import type { User, MarketId, LanguageId, TrackId, League } from '../types';
 import type { UserRow } from '../types/supabase';
 import '../global.css';
 
@@ -45,7 +45,9 @@ export default function RootLayout() {
               id:             data.id,
               email:          data.email,
               username:       data.username,
+              track:          'tradr' as TrackId,
               market:         data.market as MarketId,
+              language:       'python' as LanguageId,
               xp:             data.xp,
               level:          data.level,
               pipStage:       getPipStage(data.level),

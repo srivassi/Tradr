@@ -1,13 +1,18 @@
 import type { MarketId } from '../constants/markets';
+import type { LanguageId } from '../constants/languages';
 import type { PipMood, PipStage } from '../constants/pip';
 
-export type { MarketId, PipMood, PipStage };
+export type { MarketId, LanguageId, PipMood, PipStage };
+
+export type TrackId = 'tradr' | 'codr';
 
 export interface User {
   id: string;
   email: string;
   username: string;
+  track: TrackId;
   market: MarketId;
+  language: LanguageId;
   xp: number;
   level: number;
   pipStage: PipStage;
@@ -28,6 +33,15 @@ export interface LessonProgress {
   xpEarned: number | null;
   perfect: boolean;
   completedAt: string | null;
+}
+
+export interface Lesson {
+  id: string;
+  name: string;
+  unit: number;
+  market: MarketId | 'shared';
+  xpReward: number;
+  questions: Question[];
 }
 
 export interface Question {

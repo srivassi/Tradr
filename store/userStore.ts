@@ -1,35 +1,56 @@
 import { create } from 'zustand';
-import type { User, MarketId } from '../types';
+import type { User, MarketId, LanguageId, TrackId } from '../types';
 import { getPipStage } from '../constants/pip';
 
 interface UserState {
   user: User | null;
   isAuthenticated: boolean;
+  pendingTrack: TrackId;
   pendingMarket: MarketId;
+  pendingLanguage: LanguageId;
+  completedLessons: string[];
 
   setUser: (user: User) => void;
   clearUser: () => void;
+  setTrack: (track: TrackId) => void;
   setMarket: (market: MarketId) => void;
+  setLanguage: (language: LanguageId) => void;
   addXP: (amount: number) => void;
   useHeart: () => void;
   refillHearts: () => void;
   incrementStreak: () => void;
   resetStreak: () => void;
+  markLessonComplete: (lessonId: string) => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
   user: null,
   isAuthenticated: false,
+  pendingTrack: 'tradr',
   pendingMarket: 'india',
+  pendingLanguage: 'python',
+  completedLessons: [],
 
   setUser: (user) => set({ user, isAuthenticated: true }),
 
   clearUser: () => set({ user: null, isAuthenticated: false }),
 
+  setTrack: (track) =>
+    set((state) => ({
+      pendingTrack: track,
+      user: state.user ? { ...state.user, track } : null,
+    })),
+
   setMarket: (market) =>
     set((state) => ({
       pendingMarket: market,
       user: state.user ? { ...state.user, market } : null,
+    })),
+
+  setLanguage: (language) =>
+    set((state) => ({
+      pendingLanguage: language,
+      user: state.user ? { ...state.user, language } : null,
     })),
 
   addXP: (amount) =>
@@ -62,14 +83,28 @@ export const useUserStore = create<UserState>((set) => ({
     })),
 
   incrementStreak: () =>
-    set((state) => ({
-      user: state.user
-        ? { ...state.user, streakDays: state.user.streakDays + 1 }
-        : null,
-    })),
+    set((state) => {
+      if (!state.user) return state;
+      const today = new Date().toISOString().split('T')[0];
+      if (state.user.lastActive === today) return state;
+      return {
+        user: {
+          ...state.user,
+          streakDays: state.user.streakDays + 1,
+          lastActive: today,
+        },
+      };
+    }),
 
   resetStreak: () =>
     set((state) => ({
       user: state.user ? { ...state.user, streakDays: 0 } : null,
+    })),
+
+  markLessonComplete: (lessonId) =>
+    set((state) => ({
+      completedLessons: state.completedLessons.includes(lessonId)
+        ? state.completedLessons
+        : [...state.completedLessons, lessonId],
     })),
 }));

@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { useUserStore } from '../../store/userStore';
 import { colors, typography, spacing } from '../../constants/theme';
 import { getPipStage } from '../../constants/pip';
-import type { User, MarketId, League } from '../../types';
+import type { User, MarketId, LanguageId, TrackId, League } from '../../types';
 import type { UserRow } from '../../types/supabase';
 
 export default function LoginScreen() {
@@ -40,7 +40,12 @@ export default function LoginScreen() {
 
       let p: UserRow;
       if (!rawProfile) {
-        const meta = data.user.user_metadata as { username?: string; market?: string };
+        const meta = data.user.user_metadata as {
+          username?: string;
+          track?: string;
+          market?: string;
+          language?: string;
+        };
         if (!meta?.username) {
           throw new Error('Account setup incomplete. Please sign up again.');
         }
@@ -62,23 +67,43 @@ export default function LoginScreen() {
         const { error: insertError } = await supabase.from('users').insert(row);
         if (insertError) throw insertError;
         p = row as UserRow;
+
+        setUser({
+          id:             p.id,
+          email:          p.email,
+          username:       p.username,
+          track:          (meta.track ?? 'tradr') as TrackId,
+          market:         (meta.market ?? 'india') as MarketId,
+          language:       (meta.language ?? 'python') as LanguageId,
+          xp:             p.xp,
+          level:          p.level,
+          pipStage:       getPipStage(p.level),
+          streakDays:     p.streak_days,
+          lastActive:     p.last_active ?? new Date().toISOString(),
+          hearts:         p.hearts,
+          heartsRefillAt: p.hearts_refill_at,
+          league:         p.league as League,
+        } satisfies User);
       } else {
         p = rawProfile as UserRow;
+
+        setUser({
+          id:             p.id,
+          email:          p.email,
+          username:       p.username,
+          track:          'tradr' as TrackId,
+          market:         p.market as MarketId,
+          language:       'python' as LanguageId,
+          xp:             p.xp,
+          level:          p.level,
+          pipStage:       getPipStage(p.level),
+          streakDays:     p.streak_days,
+          lastActive:     p.last_active ?? new Date().toISOString(),
+          hearts:         p.hearts,
+          heartsRefillAt: p.hearts_refill_at,
+          league:         p.league as League,
+        } satisfies User);
       }
-      setUser({
-        id:             p.id,
-        email:          p.email,
-        username:       p.username,
-        market:         p.market as MarketId,
-        xp:             p.xp,
-        level:          p.level,
-        pipStage:       getPipStage(p.level),
-        streakDays:     p.streak_days,
-        lastActive:     p.last_active ?? new Date().toISOString(),
-        hearts:         p.hearts,
-        heartsRefillAt: p.hearts_refill_at,
-        league:         p.league as League,
-      } satisfies User);
 
       router.replace('/(tabs)');
     } catch (err: unknown) {

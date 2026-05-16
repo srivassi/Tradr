@@ -17,7 +17,9 @@ export default function SignupScreen() {
   const [error, setError]       = useState<string | null>(null);
   const [sent, setSent]         = useState(false);
 
-  const market = useUserStore((s) => s.pendingMarket);
+  const pendingTrack    = useUserStore((s) => s.pendingTrack);
+  const pendingMarket   = useUserStore((s) => s.pendingMarket);
+  const pendingLanguage = useUserStore((s) => s.pendingLanguage);
 
   async function handleSignup() {
     setError(null);
@@ -35,7 +37,14 @@ export default function SignupScreen() {
       const { data, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username, market } },
+        options: {
+          data: {
+            username,
+            track:    pendingTrack,
+            market:   pendingMarket,
+            language: pendingLanguage,
+          },
+        },
       });
       if (authError) throw authError;
       if (!data.user) throw new Error('Signup failed — please try again.');
@@ -120,7 +129,7 @@ export default function SignupScreen() {
         </TouchableOpacity>
 
         <Text style={styles.disclaimer}>
-          Tradr is for educational purposes only. Nothing here constitutes financial advice.
+          Mastr is for educational purposes only. Nothing here constitutes financial advice.
         </Text>
       </ScrollView>
 

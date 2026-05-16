@@ -1,22 +1,29 @@
-# Tradr
+# Mastr
 
-Gamified stock market education. Duolingo's UI and habit loop — applied to trading.
+Gamified learning platform. Duolingo's UI and habit loop — applied to finance and coding.
 
-Mobile-first (Expo Go, install via QR). Multi-market: India 🇮🇳 / EU 🇪🇺 / US 🇺🇸.
+Mobile-first (Expo Go, install via QR). Two tracks: **Tradr** (markets) and **Codr** (DSA/interviews).
 
 ---
 
 ## What is this?
 
-Tradr teaches users to understand markets, read financial news critically, and think like a trader — through Duolingo-style gamification. Pick your home market on onboarding and every lesson, scenario, and live data pull is contextualised to it.
+Mastr is a gamified learning platform for the 18–26 year old who finds both investing and technical interviews intimidating. Pick your track on onboarding — or do both and become a quant.
 
-**Core features:**
+**📈 Tradr** — stock market education, multi-market (India 🇮🇳 / EU 🇪🇺 / US 🇺🇸)
 - Structured lesson paths (beginner → advanced, unit-by-unit unlock)
-- Live market data (yfinance — Nifty 50, DAX, S&P 500)
+- Live market data via yfinance (Nifty 50, DAX, S&P 500)
 - Scenario engine — real recent events turned into coached questions
-- AI explanations via Claude (wrong answers, headlines, deep dives)
 - Media literacy curriculum — Unit 3+ teaches users to read headlines critically
-- Pip the mascot — a bear cub who evolves into a golden bull as you level up
+- AI explanations via Claude (wrong answers, headlines, deep dives)
+
+**💻 Codr** — DSA patterns and coding interview prep (Python 🐍 / Java ☕)
+- Arrays & Hashing, Two Pointers, Sliding Window, Stack/Queue, Binary Search, Trees
+- Language-specific units (Pythonic patterns vs Java data structures)
+- Fill-in-the-blank code exercises, spot-the-bug, approach ordering
+- Interview simulation scenarios
+
+**Both tracks share:** Pip the mascot (bear cub → golden bull), XP, streaks, hearts, leagues, badges.
 
 ---
 
@@ -26,11 +33,10 @@ Tradr teaches users to understand markets, read financial news critically, and t
 |---|---|
 | Mobile | Expo (React Native) + TypeScript |
 | Navigation | Expo Router (file-based) |
-| Styling | NativeWind (Tailwind for RN) |
-| Animations | React Native Reanimated + Lottie |
+| Animations | React Native Reanimated |
 | State | Zustand |
 | Backend | FastAPI (Python) |
-| Database | Supabase |
+| Database | Supabase (auth, progress, leaderboard) |
 | AI | Claude API (`claude-sonnet-4-20250514`) |
 | Market data | yfinance |
 | News | NewsAPI / RSS |
@@ -49,7 +55,7 @@ Tradr teaches users to understand markets, read financial news critically, and t
 ### Run
 
 ```bash
-git clone https://github.com/srivassi/tradr && cd tradr
+git clone https://github.com/srivassi/mastr && cd mastr
 
 # Frontend
 npm install
@@ -84,25 +90,26 @@ ENVIRONMENT=development
 ## Project Structure
 
 ```
-tradr/
+mastr/
 ├── app/                    # Expo Router screens
-│   ├── (auth)/             # welcome, onboarding, login, signup
+│   ├── (auth)/             # welcome, onboarding (track + market/language), login, signup
 │   ├── (tabs)/             # Learn, Markets, Practice, League, Profile
-│   ├── lesson/[id].tsx
+│   ├── lesson/[id].tsx     # question-by-question lesson flow
 │   └── scenario/[id].tsx
-├── components/             # UI components (Pip, lesson, markets, gamification)
+├── components/             # UI (lesson, path map, gamification, markets)
 ├── backend/                # FastAPI
 │   ├── routers/            # lessons, scenarios, markets, news, users, leaderboard
 │   ├── services/           # claude_service, market_service, sm2, scenario_builder
 │   └── models/
 ├── content/                # Lesson JSON (source of truth)
-│   └── lessons/shared/ india/ eu/ us/
-├── hooks/                  # useLesson, useStreak, useXP, useMarket, ...
-├── store/                  # Zustand (userStore)
-├── constants/              # theme, markets, pip
+│   ├── markets/            # shared, india, eu, us
+│   └── code/               # unit_1–unit_5 shared DSA, language-specific units
+├── lib/                    # curriculum.ts, lessonData.ts, supabase.ts
+├── store/                  # Zustand (userStore — XP, streak, hearts, track, market)
+├── constants/              # theme, markets, languages, pip
 └── types/
 ```
 
 ---
 
-> **Disclaimer:** Tradr is for educational purposes only. Nothing here constitutes financial advice.
+> **Disclaimer:** Mastr is for educational purposes only. Nothing here constitutes financial advice.
