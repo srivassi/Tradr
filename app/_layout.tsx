@@ -79,11 +79,11 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <Stack>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="lesson/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="scenario/[id]" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="lesson" />
+      <Stack.Screen name="scenario" />
     </Stack>
   );
 }

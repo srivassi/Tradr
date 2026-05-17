@@ -26,6 +26,8 @@ const CODR_LESSONS_2: Lesson[] = [
       {
         id: 'codr4-lesson1-q3', type: 'multiple_choice',
         question: 'Why prefer `mid = left + (right - left) // 2` over `mid = (left + right) // 2`?',
+        codeSnippet: '# Option A (common but risky):\nmid = (left + right) // 2\n\n# Option B (always safe):\nmid = left + (right - left) // 2',
+        codeLanguage: 'python',
         options: [
           'It\'s faster to compute',
           'It avoids integer overflow when left + right exceeds the max int value',
@@ -38,7 +40,9 @@ const CODR_LESSONS_2: Lesson[] = [
       },
       {
         id: 'codr4-lesson1-q4', type: 'multiple_choice',
-        question: 'Target is smaller than nums[mid]. Where do you search next?',
+        question: 'The standard template: target < `nums[mid]`. Which line runs next?',
+        codeSnippet: 'left, right = 0, len(nums) - 1\nwhile left <= right:\n    mid = left + (right - left) // 2\n    if nums[mid] == target:\n        return mid\n    elif nums[mid] < target:\n        left = mid + 1\n    else:\n        ???  # target < nums[mid]',
+        codeLanguage: 'python',
         options: ['right = mid + 1', 'left = mid + 1', 'right = mid - 1', 'left = mid - 1'],
         correct: 2,
         explanationShort: 'The target is in the left half. Discard mid and everything to its right: right = mid - 1.',
@@ -66,6 +70,8 @@ const CODR_LESSONS_2: Lesson[] = [
       {
         id: 'codr4-lesson2-q2', type: 'multiple_choice',
         question: 'In a rotated sorted array, how do you check if the LEFT half is sorted?',
+        codeSnippet: 'if ???:          # left half is sorted\n    # target in [nums[left], nums[mid]]?\nelse:             # right half is sorted\n    # target in [nums[mid], nums[right]]?',
+        codeLanguage: 'python',
         options: [
           'Compare nums[mid] with the target',
           'Check if nums[left] <= nums[mid]',

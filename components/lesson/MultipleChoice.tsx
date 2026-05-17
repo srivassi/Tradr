@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, spacing, typography } from '../../constants/theme';
+import FormattedText from './FormattedText';
 
 type AnswerState = 'idle' | 'correct' | 'wrong';
 
@@ -42,7 +43,7 @@ export default function MultipleChoice({ options, selected, answerState, correct
             accessibilityLabel={text}
             accessibilityState={{ selected: i === selected }}
           >
-            <Text style={[styles.optionText, textVariants[variant]]}>{text}</Text>
+            <FormattedText text={text} style={[styles.optionText, textVariants[variant]]} />
           </TouchableOpacity>
         );
       })}

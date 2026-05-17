@@ -87,6 +87,8 @@ const CODR_LESSONS: Lesson[] = [
       {
         id: 'codr1-lesson2-q3', type: 'multiple_choice',
         question: 'In the hash map Two Sum solution, what do we store as the key?',
+        codeSnippet: 'def two_sum(nums, target):\n    seen = {}   # {???: index}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[???] = i\n    return []',
+        codeLanguage: 'python',
         options: ['The target value', 'The current index', 'The current number', 'The complement'],
         correct: 2,
         explanationShort: 'We store {number: index}. For each new element, we check if its complement (target - num) is already a key.',
@@ -114,6 +116,8 @@ const CODR_LESSONS: Lesson[] = [
       {
         id: 'codr1-lesson3-q1', type: 'multiple_choice',
         question: 'What is the most Pythonic way to count character frequencies in a string?',
+        codeSnippet: 'from collections import Counter\n\nfreq = Counter("aabbc")\n# freq → Counter({\'a\': 2, \'b\': 2, \'c\': 1})\nfreq[\'a\']  # → 2',
+        codeLanguage: 'python',
         options: ['Sorting the string first', 'Using a nested loop', 'Using collections.Counter', 'Using a set'],
         correct: 2,
         explanationShort: 'Counter("aabbc") gives Counter({\'a\': 2, \'b\': 2, \'c\': 1}) in one line. It\'s built for exactly this.',

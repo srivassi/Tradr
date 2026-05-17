@@ -8,6 +8,8 @@ import { getLesson } from '../../lib/lessonData';
 import ProgressBar from '../../components/lesson/ProgressBar';
 import MultipleChoice from '../../components/lesson/MultipleChoice';
 import AnswerFooter from '../../components/lesson/AnswerFooter';
+import FormattedText from '../../components/lesson/FormattedText';
+import CodeBlock from '../../components/lesson/CodeBlock';
 
 type AnswerState = 'idle' | 'correct' | 'wrong';
 
@@ -98,6 +100,7 @@ export default function LessonScreen() {
         total={lesson.questions.length}
         hearts={hearts}
         onExit={handleExit}
+        lessonName={lesson.name}
       />
 
       <ScrollView
@@ -106,7 +109,10 @@ export default function LessonScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.question}>{question.question}</Text>
+        {question.codeSnippet && (
+          <CodeBlock code={question.codeSnippet} language={question.codeLanguage} />
+        )}
+        <FormattedText text={question.question} style={styles.question} />
       </ScrollView>
 
       <MultipleChoice
