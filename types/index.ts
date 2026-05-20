@@ -35,6 +35,36 @@ export interface LessonProgress {
   completedAt: string | null;
 }
 
+// ─── Chart types ──────────────────────────────────────────────────────────────
+
+export interface CandlePoint {
+  open: number;
+  close: number;
+  high: number;
+  low: number;
+}
+
+export interface LinePoint {
+  value: number;
+  label?: string;
+}
+
+export interface ChartReferenceLine {
+  value: number;
+  label: string;
+  color: string;
+}
+
+export interface QuestionChartData {
+  type: 'candlestick' | 'line';
+  candleData?: CandlePoint[];
+  lineData?: LinePoint[];
+  referenceLines?: ChartReferenceLine[];
+  title?: string;
+}
+
+// ─── Lesson / Question types ──────────────────────────────────────────────────
+
 export interface Lesson {
   id: string;
   name: string;
@@ -46,12 +76,13 @@ export interface Lesson {
 
 export interface Question {
   id: string;
-  type: 'multiple_choice' | 'tap_the_word' | 'fill_in_blank' | 'scenario';
+  type: 'multiple_choice' | 'chart_question' | 'tap_the_word' | 'fill_in_blank' | 'scenario';
   question: string;
   options: string[];
   correct: number;
   explanationShort: string;
   tags: string[];
+  chartData?: QuestionChartData;
 }
 
 export interface Scenario extends Question {

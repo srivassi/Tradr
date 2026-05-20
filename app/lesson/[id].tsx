@@ -8,6 +8,7 @@ import { getLesson } from '../../lib/lessonData';
 import ProgressBar from '../../components/lesson/ProgressBar';
 import MultipleChoice from '../../components/lesson/MultipleChoice';
 import AnswerFooter from '../../components/lesson/AnswerFooter';
+import ChartQuestion from '../../components/lesson/ChartQuestion';
 
 type AnswerState = 'idle' | 'correct' | 'wrong';
 
@@ -106,6 +107,7 @@ export default function LessonScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {question.chartData && <ChartQuestion chartData={question.chartData} />}
         <Text style={styles.question}>{question.question}</Text>
       </ScrollView>
 
