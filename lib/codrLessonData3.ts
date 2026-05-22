@@ -1,0 +1,417 @@
+import type { Lesson } from '../types';
+
+const CODR_LESSONS_3: Lesson[] = [
+
+  // ─── UNIT 6: System Design & REST API ────────────────────────────────────────
+
+  {
+    id: 'codr6sd-lesson1', name: 'Class Design: Building Data Structures', unit: 6, market: 'shared', xpReward: 25,
+    questions: [
+      {
+        id: 'codr6sd-lesson1-q1', type: 'multiple_choice',
+        question: 'Why do coding interviews ask you to define classes like TreeNode or ListNode from scratch?',
+        options: [
+          'To test if you have the standard library memorised',
+          'Because these classes don\'t exist in Python or Java',
+          'To see that you understand the structure you\'re working with, not just how to import it',
+          'To make the problem harder artificially',
+        ],
+        correct: 2,
+        explanationShort: 'Writing TreeNode yourself proves you know what a node contains (val + children pointers). Importing a library hides that understanding.',
+        tags: ['class_design', 'oop', 'interviews'],
+      },
+      {
+        id: 'codr6sd-lesson1-q2', type: 'multiple_choice',
+        question: 'Which is the correct Python definition of a singly linked list node?',
+        options: [
+          'class ListNode: val = 0; next = None',
+          'class ListNode:\n  def __init__(self, val=0, next=None):\n    self.val = val\n    self.next = next',
+          'ListNode = {"val": 0, "next": None}',
+          'def ListNode(val, next): return val, next',
+        ],
+        correct: 1,
+        explanationShort: 'A node is an object with state (val) and a pointer (next). Class attributes set at class level are shared; __init__ creates per-instance state.',
+        tags: ['class_design', 'linked_list', 'python'],
+      },
+      {
+        id: 'codr6sd-lesson1-q3', type: 'multiple_choice',
+        question: 'You\'re designing a Stack class from scratch. Which two methods are the absolute minimum it must have?',
+        options: [
+          'push() and pop()',
+          'add() and remove()',
+          'enqueue() and dequeue()',
+          'insert() and delete()',
+        ],
+        correct: 0,
+        explanationShort: 'A Stack is LIFO (Last In First Out). push() adds to the top; pop() removes from the top. These two operations define the Stack contract.',
+        tags: ['class_design', 'stack', 'oop'],
+      },
+      {
+        id: 'codr6sd-lesson1-q4', type: 'multiple_choice',
+        question: 'A TreeNode for a binary tree has: val, left, right. What does `left` contain?',
+        options: [
+          'The integer value of the left subtree',
+          'A reference to another TreeNode (or None)',
+          'The index of the left child in a list',
+          'The depth of the left subtree',
+        ],
+        correct: 1,
+        explanationShort: '`left` is a pointer — a reference to another TreeNode object, or None if there\'s no left child. This is how trees are built: nodes pointing to nodes.',
+        tags: ['class_design', 'trees', 'pointers'],
+      },
+      {
+        id: 'codr6sd-lesson1-q5', type: 'multiple_choice',
+        question: 'You\'re designing an Order class for a stock trading system. Which fields belong in the Order class?',
+        options: [
+          'order_id, ticker, quantity, price, side (buy/sell), timestamp',
+          'user_name, company_description, market_cap, ceo_name',
+          'database_connection, server_ip, cache_key',
+          'order_id is enough — everything else can be computed',
+        ],
+        correct: 0,
+        explanationShort: 'Each Order represents one trade instruction: what (ticker), how much (quantity), at what price, which direction (buy/sell), and when. This is the minimum state an Order must track.',
+        tags: ['class_design', 'system_design', 'oop'],
+      },
+    ],
+  },
+
+  {
+    id: 'codr6sd-lesson2', name: 'OOP Principles: SOLID & Composition', unit: 6, market: 'shared', xpReward: 25,
+    questions: [
+      {
+        id: 'codr6sd-lesson2-q1', type: 'multiple_choice',
+        question: 'The Single Responsibility Principle says a class should:',
+        options: [
+          'Only have a single method',
+          'Have only one reason to change — do one job well',
+          'Inherit from exactly one parent class',
+          'Be no longer than 50 lines of code',
+        ],
+        correct: 1,
+        explanationShort: 'SRP: each class owns one concern. A UserService that also sends emails violates SRP — you\'d need to change it for two unrelated reasons.',
+        tags: ['solid', 'oop', 'design_principles'],
+      },
+      {
+        id: 'codr6sd-lesson2-q2', type: 'multiple_choice',
+        question: 'You have a `Shape` class with an `area()` method. You add a Triangle subclass. Which OOP principle did you just apply?',
+        options: [
+          'Single Responsibility Principle',
+          'Dependency Inversion',
+          'Inheritance — extending behaviour through subclasses',
+          'Encapsulation — hiding the formula inside the class',
+        ],
+        correct: 2,
+        explanationShort: 'Triangle inherits from Shape and overrides area() with its own formula. That\'s inheritance: reuse the interface, specialise the behaviour.',
+        tags: ['inheritance', 'oop', 'polymorphism'],
+      },
+      {
+        id: 'codr6sd-lesson2-q3', type: 'multiple_choice',
+        question: 'When is composition preferred over inheritance?',
+        options: [
+          'Always — inheritance is bad practice in modern code',
+          'When the relationship is "has-a" rather than "is-a"',
+          'When you want to call methods from a parent class',
+          'When the subclass needs to override every method',
+        ],
+        correct: 1,
+        explanationShort: 'A Car "has-a" Engine, not "is-a" Engine. Inherit when the relationship is truly "is-a" (Dog is-a Animal). Compose when you\'re combining behaviours.',
+        tags: ['composition', 'inheritance', 'oop'],
+      },
+      {
+        id: 'codr6sd-lesson2-q4', type: 'multiple_choice',
+        question: 'Encapsulation means:',
+        options: [
+          'Wrapping all your code in a single class',
+          'Hiding internal state and exposing a clean interface',
+          'Making all methods static',
+          'Storing data in a capsule-shaped data structure',
+        ],
+        correct: 1,
+        explanationShort: 'Encapsulation hides implementation details. Users of your Stack class don\'t need to know you\'re using a Python list internally — they just call push() and pop().',
+        tags: ['encapsulation', 'oop', 'abstraction'],
+      },
+      {
+        id: 'codr6sd-lesson2-q5', type: 'multiple_choice',
+        question: 'An interviewer asks you to "design a Parking Lot." What should you do first?',
+        options: [
+          'Start coding the first class that comes to mind',
+          'Ask clarifying questions: how many levels, what vehicle types, how is payment handled?',
+          'Draw a UML diagram immediately',
+          'Estimate the time complexity of finding a parking spot',
+        ],
+        correct: 1,
+        explanationShort: 'Clarifying constraints before designing is a core interview skill. A parking lot for bikes only is very different from a multi-level lot with EVs and monthly passes.',
+        tags: ['system_design', 'interviews', 'design_process'],
+      },
+    ],
+  },
+
+  {
+    id: 'codr6sd-lesson3', name: 'REST API Fundamentals', unit: 6, market: 'shared', xpReward: 25,
+    questions: [
+      {
+        id: 'codr6sd-lesson3-q1', type: 'multiple_choice',
+        question: 'What does REST stand for, and what is its core idea?',
+        options: [
+          'Remote Execution Service Transfer — run code on a remote server',
+          'Representational State Transfer — access resources via a uniform interface (HTTP)',
+          'Reliable Endpoint Service Technology — guaranteed delivery of requests',
+          'REST has no meaning — it\'s just a brand name',
+        ],
+        correct: 1,
+        explanationShort: 'REST is an architectural style for APIs. Resources (users, lessons, orders) are identified by URLs, and HTTP methods express what action to take on them.',
+        tags: ['rest', 'api', 'fundamentals'],
+      },
+      {
+        id: 'codr6sd-lesson3-q2', type: 'multiple_choice',
+        question: 'Which HTTP method should you use to retrieve a user\'s profile?',
+        options: ['POST', 'PUT', 'GET', 'DELETE'],
+        correct: 2,
+        explanationShort: 'GET is for reading — it\'s read-only and has no request body. You should be able to call it a hundred times with no side effects.',
+        tags: ['rest', 'http_methods', 'get'],
+      },
+      {
+        id: 'codr6sd-lesson3-q3', type: 'multiple_choice',
+        question: 'What is the difference between PUT and PATCH?',
+        options: [
+          'PUT creates a resource; PATCH reads it',
+          'PUT replaces the entire resource; PATCH updates only the fields you send',
+          'PUT is for databases; PATCH is for files',
+          'They are identical — both update a resource',
+        ],
+        correct: 1,
+        explanationShort: 'PUT replaces the whole object — omit a field and it gets deleted. PATCH is a partial update: only the fields you send are changed.',
+        tags: ['rest', 'http_methods', 'put', 'patch'],
+      },
+      {
+        id: 'codr6sd-lesson3-q4', type: 'multiple_choice',
+        question: 'A REST endpoint should use a noun, not a verb. Which URL design is correct?',
+        options: [
+          'POST /createUser',
+          'GET /fetchLesson?id=5',
+          'POST /users',
+          'GET /getLesson/5',
+        ],
+        correct: 2,
+        explanationShort: 'REST uses nouns for resources. The HTTP method (POST) expresses the action (create). So: POST /users = create a user. GET /lessons/5 = read lesson 5.',
+        tags: ['rest', 'api_design', 'naming'],
+      },
+      {
+        id: 'codr6sd-lesson3-q5', type: 'multiple_choice',
+        question: 'What does "idempotent" mean in the context of HTTP methods?',
+        options: [
+          'The request always returns the same data',
+          'Calling the same request multiple times produces the same server state as calling it once',
+          'The request cannot be cached',
+          'The request is encrypted end-to-end',
+        ],
+        correct: 1,
+        explanationShort: 'Idempotency is about side effects. DELETE /users/5 called three times still results in user 5 being deleted — same state. POST /users called three times creates three users — not idempotent.',
+        tags: ['rest', 'idempotency', 'http_methods'],
+      },
+    ],
+  },
+
+  {
+    id: 'codr6sd-lesson4', name: 'HTTP Status Codes', unit: 6, market: 'shared', xpReward: 25,
+    questions: [
+      {
+        id: 'codr6sd-lesson4-q1', type: 'multiple_choice',
+        question: 'What does a 2xx status code mean?',
+        options: [
+          'The request failed due to a client error',
+          'The server is unavailable',
+          'The request succeeded',
+          'The resource has moved to a new URL',
+        ],
+        correct: 2,
+        explanationShort: '2xx = success. 200 OK is the most common. 201 Created is returned after POST. 204 No Content after a DELETE that returns nothing.',
+        tags: ['http', 'status_codes', '2xx'],
+      },
+      {
+        id: 'codr6sd-lesson4-q2', type: 'multiple_choice',
+        question: 'A user sends a valid JWT token but tries to access another user\'s data. What status code should you return?',
+        options: [
+          '401 Unauthorized — their token is invalid',
+          '403 Forbidden — authenticated but not permitted',
+          '404 Not Found — pretend the resource doesn\'t exist',
+          '400 Bad Request — the request is malformed',
+        ],
+        correct: 1,
+        explanationShort: '401 = not authenticated. 403 = authenticated but not authorised. This user has a valid token, so it\'s 403 — they\'re logged in but don\'t have access to that specific resource.',
+        tags: ['http', 'status_codes', 'auth', '4xx'],
+      },
+      {
+        id: 'codr6sd-lesson4-q3', type: 'multiple_choice',
+        question: 'Your API receives a request with a valid format but the email field contains "not-an-email". Which status code is correct?',
+        options: ['500 Internal Server Error', '404 Not Found', '400 Bad Request', '403 Forbidden'],
+        correct: 2,
+        explanationShort: '400 is for client errors where the request itself is invalid. The client sent bad data — it\'s their fault, not the server\'s.',
+        tags: ['http', 'status_codes', '4xx', 'validation'],
+      },
+      {
+        id: 'codr6sd-lesson4-q4', type: 'multiple_choice',
+        question: 'Your database crashes while handling a request. Which status code should you return?',
+        options: ['400 Bad Request', '404 Not Found', '503 Service Unavailable', '403 Forbidden'],
+        correct: 2,
+        explanationShort: '5xx codes are server errors — something went wrong on your side, not the client\'s. 503 means the server can\'t handle the request right now (overloaded or down).',
+        tags: ['http', 'status_codes', '5xx', 'error_handling'],
+      },
+      {
+        id: 'codr6sd-lesson4-q5', type: 'multiple_choice',
+        question: 'A user creates an account with an email that already exists. Which status code fits?',
+        options: ['400 Bad Request', '409 Conflict', '403 Forbidden', '404 Not Found'],
+        correct: 1,
+        explanationShort: '409 Conflict signals that the request conflicts with the current state of the server — a duplicate resource. It\'s more specific than 400 and tells the client exactly why.',
+        tags: ['http', 'status_codes', '4xx', 'conflict'],
+      },
+    ],
+  },
+
+  {
+    id: 'codr6sd-lesson5', name: 'Designing REST Endpoints', unit: 6, market: 'shared', xpReward: 30,
+    questions: [
+      {
+        id: 'codr6sd-lesson5-q1', type: 'multiple_choice',
+        question: 'You\'re designing an API for a trading app. Which endpoint design is the most RESTful?',
+        options: [
+          'POST /submitOrder, GET /getOrders, POST /cancelOrder',
+          'POST /orders, GET /orders, DELETE /orders/{id}',
+          'GET /doOrder?action=create, GET /doOrder?action=list',
+          'POST /api/v1/order/new, GET /api/v1/order/list',
+        ],
+        correct: 1,
+        explanationShort: 'REST uses nouns (resources) + HTTP methods (actions). POST /orders creates. GET /orders lists. DELETE /orders/{id} cancels. No verbs in the URL.',
+        tags: ['rest', 'api_design', 'endpoints'],
+      },
+      {
+        id: 'codr6sd-lesson5-q2', type: 'multiple_choice',
+        question: 'Why should you version your API (e.g. /v1/lessons)?',
+        options: [
+          'To confuse competitors who try to reverse-engineer your API',
+          'So you can release breaking changes in /v2 without breaking existing clients on /v1',
+          'Because HTTP requires versioning for all endpoints',
+          'To track which users are on old hardware',
+        ],
+        correct: 1,
+        explanationShort: 'Versioning lets you evolve the API without breaking existing integrations. v1 stays stable while v2 gets the new design. This is standard practice at Bloomberg, Revolut, and every major API.',
+        tags: ['rest', 'api_design', 'versioning'],
+      },
+      {
+        id: 'codr6sd-lesson5-q3', type: 'multiple_choice',
+        question: 'You want to get all lessons for market "india" with difficulty 2. Where should these filters go?',
+        options: [
+          'In the URL path: GET /lessons/india/difficulty/2',
+          'In the request body: {"market": "india", "difficulty": 2}',
+          'In query parameters: GET /lessons?market=india&difficulty=2',
+          'In the HTTP method: FILTER /lessons',
+        ],
+        correct: 2,
+        explanationShort: 'URL path segments identify a specific resource. Query parameters filter or sort a collection. GET /lessons?market=india&difficulty=2 is correct — you\'re listing the lessons resource with filters.',
+        tags: ['rest', 'api_design', 'query_params'],
+      },
+      {
+        id: 'codr6sd-lesson5-q4', type: 'multiple_choice',
+        question: 'An interviewer at Goldman asks you to design the API for a lesson progress tracker. What should you do first?',
+        options: [
+          'Start writing endpoint code immediately',
+          'Clarify: who are the users, what actions do they take, what data is tracked?',
+          'Ask which HTTP library to use',
+          'List every possible endpoint without asking questions',
+        ],
+        correct: 1,
+        explanationShort: 'Requirements before design. An interviewer rewards you for asking "do we need multi-user support?", "do we track partial progress?", "does completion trigger anything?" — this shows engineering maturity.',
+        tags: ['system_design', 'api_design', 'interviews'],
+      },
+      {
+        id: 'codr6sd-lesson5-q5', type: 'multiple_choice',
+        question: 'Which of these is the correct REST design for marking a lesson as complete?',
+        options: [
+          'GET /lessons/{id}/complete',
+          'POST /completeLesson?id={id}',
+          'POST /lessons/{id}/completions',
+          'PUT /lessons?status=complete&id={id}',
+        ],
+        correct: 2,
+        explanationShort: 'A completion is a new resource being created — it\'s a noun (completions), not an action verb. POST creates it. GET /lessons/{id}/complete is wrong because GET shouldn\'t change state.',
+        tags: ['rest', 'api_design', 'endpoints'],
+      },
+    ],
+  },
+
+  {
+    id: 'codr6sd-quiz', name: 'Unit 6 Quiz — System Design & REST', unit: 6, market: 'shared', xpReward: 50,
+    questions: [
+      {
+        id: 'codr6sd-quiz-q1', type: 'multiple_choice',
+        question: 'In an interview, you\'re asked to design a Stack. Which is the minimum correct Python implementation?',
+        options: [
+          'Use a list directly — no class needed',
+          'class Stack: def push(self, x): self._data.append(x) — but _data is never initialised',
+          'class Stack:\n  def __init__(self): self._data = []\n  def push(self, x): self._data.append(x)\n  def pop(self): return self._data.pop()',
+          'class Stack(list): pass — inherit all list methods',
+        ],
+        correct: 2,
+        explanationShort: 'A Stack class with __init__ initialising _data, and push/pop methods is the correct answer. It encapsulates the list and exposes only Stack semantics.',
+        tags: ['class_design', 'stack', 'oop'],
+      },
+      {
+        id: 'codr6sd-quiz-q2', type: 'multiple_choice',
+        question: 'A user sends a POST request to /users with a valid body, but the username is already taken. What should the API return?',
+        options: ['200 OK with an error message in the body', '400 Bad Request', '409 Conflict', '500 Internal Server Error'],
+        correct: 2,
+        explanationShort: '409 Conflict: the request is syntactically valid but conflicts with existing server state. The client needs to know the specific reason (duplicate username) so they can fix it.',
+        tags: ['http', 'status_codes', '4xx'],
+      },
+      {
+        id: 'codr6sd-quiz-q3', type: 'multiple_choice',
+        question: 'Which HTTP method is NOT idempotent?',
+        options: ['GET', 'PUT', 'DELETE', 'POST'],
+        correct: 3,
+        explanationShort: 'POST is not idempotent — calling it 3 times creates 3 resources. GET, PUT, and DELETE are idempotent: calling them repeatedly leaves the server in the same state as calling them once.',
+        tags: ['rest', 'idempotency', 'http_methods'],
+      },
+      {
+        id: 'codr6sd-quiz-q4', type: 'multiple_choice',
+        question: 'The Parking Lot system design asks you to support: standard cars, motorbikes, and electric vehicles. What\'s the best OOP approach?',
+        options: [
+          'One giant Vehicle class with an if/else block for each type',
+          'A Vehicle base class with Car, Motorbike, ElectricVehicle subclasses',
+          'Three separate, completely unrelated classes',
+          'A global dictionary to store all vehicle data',
+        ],
+        correct: 1,
+        explanationShort: 'Inheritance + polymorphism: shared behaviour (park, leave, pay) lives in Vehicle. Specific behaviour (EV charging) lives in the subclass. This is the Liskov Substitution Principle in practice.',
+        tags: ['oop', 'inheritance', 'system_design'],
+      },
+      {
+        id: 'codr6sd-quiz-q5', type: 'multiple_choice',
+        question: 'You\'re designing an API for Mastr. An interviewer says "show me how a user starts a lesson." Which endpoint design is most correct?',
+        options: [
+          'GET /startLesson/{id}',
+          'POST /lessons/{id}/attempts',
+          'POST /doLesson?action=start&id={id}',
+          'PUT /lessons/{id} with {status: "started"} in body',
+        ],
+        correct: 1,
+        explanationShort: 'Starting a lesson creates a new resource — an "attempt". POST /lessons/{id}/attempts creates that attempt. GET shouldn\'t have side effects. Verbs in URLs violate REST.',
+        tags: ['rest', 'api_design', 'system_design'],
+      },
+      {
+        id: 'codr6sd-quiz-q6', type: 'multiple_choice',
+        question: 'In tech media, a benchmark claims "Library X is 10x faster than Library Y." What should you check before believing this?',
+        options: [
+          'Nothing — benchmarks are always accurate and objective',
+          'The benchmark conditions: same hardware, same workload type, real vs synthetic data, who funded the test',
+          'Only the year the benchmark was published',
+          'Whether Library X costs more than Library Y',
+        ],
+        correct: 1,
+        explanationShort: 'Benchmarks are often cherry-picked. A library can be 10x faster on toy data and slower in production. Always ask: what workload, what hardware, who ran it, and was it independently verified?',
+        tags: ['media_literacy', 'benchmarks', 'critical_thinking'],
+      },
+    ],
+  },
+];
+
+export default CODR_LESSONS_3;

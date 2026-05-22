@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, typography } from '../../constants/theme';
 import { useUserStore } from '../../store/userStore';
 import { QUIZ_PASS_THRESHOLD } from '../../lib/curriculum';
+import { completeLesson } from '../../lib/api';
 
 interface Message { heading: string; sub: string; pip: string }
 
@@ -21,8 +22,11 @@ export default function LessonCompleteScreen() {
     lessonId: string; isQuiz: string; xp: string; correct: string; total: string;
   }>();
 
+  const user               = useUserStore((s) => s.user);
   const markLessonComplete = useUserStore((s) => s.markLessonComplete);
   const incrementStreak    = useUserStore((s) => s.incrementStreak);
+  const addXP              = useUserStore((s) => s.addXP);
+  const syncFromServer     = useUserStore((s) => s.syncFromServer);
 
   const xpNum      = Number(xp ?? 0);
   const correctNum = Number(correct ?? 0);
@@ -33,10 +37,25 @@ export default function LessonCompleteScreen() {
   const quizPassed = isQuiz !== 'true' || accuracy / 100 >= QUIZ_PASS_THRESHOLD;
 
   useEffect(() => {
-    if (quizPassed) {
-      if (lessonId) markLessonComplete(lessonId);
-      incrementStreak();
-    }
+    if (!quizPassed || !lessonId) return;
+    markLessonComplete(lessonId);
+    void (async () => {
+      try {
+        const result = await completeLesson(lessonId, {
+          xp_earned: xpNum,
+          correct:   correctNum,
+          total:     totalNum,
+          perfect,
+          is_quiz:   isQuiz === 'true',
+          track:     user?.track ?? 'tradr',
+        });
+        syncFromServer(result.new_xp, result.new_level, result.streak_days);
+      } catch {
+        // Backend unreachable — fall back to local state
+        addXP(xpNum);
+        incrementStreak();
+      }
+    })();
   }, [lessonId, quizPassed]);
 
   const msg = isQuiz === 'true' && !quizPassed
