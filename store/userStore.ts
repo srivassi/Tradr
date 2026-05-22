@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { supabase } from '../lib/supabase';
 import type { User, MarketId, LanguageId, TrackId } from '../types';
 import { getPipStage } from '../constants/pip';
 
@@ -21,6 +22,9 @@ interface UserState {
   incrementStreak: () => void;
   resetStreak: () => void;
   markLessonComplete: (lessonId: string) => void;
+  setCompletedLessons: (ids: string[]) => void;
+  syncFromServer: (xp: number, level: number, streakDays: number) => void;
+  loadProgress: (userId: string) => Promise<void>;
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -33,7 +37,7 @@ export const useUserStore = create<UserState>((set) => ({
 
   setUser: (user) => set({ user, isAuthenticated: true }),
 
-  clearUser: () => set({ user: null, isAuthenticated: false }),
+  clearUser: () => set({ user: null, isAuthenticated: false, completedLessons: [] }),
 
   setTrack: (track) =>
     set((state) => ({
@@ -56,14 +60,14 @@ export const useUserStore = create<UserState>((set) => ({
   addXP: (amount) =>
     set((state) => {
       if (!state.user) return state;
-      const newXP = state.user.xp + amount;
-      const newLevel = Math.floor(newXP / 100) + 1;
+      const newXP    = state.user.xp + amount;
+      const newLevel = Math.min(Math.floor(newXP / 100) + 1, 50);
       return {
         user: {
           ...state.user,
-          xp: newXP,
-          level: Math.min(newLevel, 50),
-          pipStage: getPipStage(Math.min(newLevel, 50)),
+          xp:       newXP,
+          level:    newLevel,
+          pipStage: getPipStage(newLevel),
         },
       };
     }),
@@ -107,4 +111,36 @@ export const useUserStore = create<UserState>((set) => ({
         ? state.completedLessons
         : [...state.completedLessons, lessonId],
     })),
+
+  setCompletedLessons: (ids) => set({ completedLessons: ids }),
+
+  syncFromServer: (xp, level, streakDays) =>
+    set((state) => {
+      if (!state.user) return state;
+      const clamped = Math.min(level, 50);
+      return {
+        user: {
+          ...state.user,
+          xp,
+          level:      clamped,
+          pipStage:   getPipStage(clamped),
+          streakDays,
+        },
+      };
+    }),
+
+  loadProgress: async (userId) => {
+    try {
+      const { data } = await supabase
+        .from('lesson_progress')
+        .select('lesson_id')
+        .eq('user_id', userId)
+        .eq('completed', true);
+      if (data) {
+        set({ completedLessons: (data as { lesson_id: string }[]).map((r) => r.lesson_id) });
+      }
+    } catch {
+      // Non-fatal — path map stays at empty state, user can still learn
+    }
+  },
 }));

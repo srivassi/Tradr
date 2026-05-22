@@ -1,7 +1,11 @@
 import { Tabs } from 'expo-router';
 import { colors } from '../../constants/theme';
+import { useUserStore } from '../../store/userStore';
 
 export default function TabLayout() {
+  const track = useUserStore((s) => s.user?.track ?? s.pendingTrack);
+  const isCodr = track === 'codr';
+
   return (
     <Tabs
       screenOptions={{
@@ -25,11 +29,17 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="markets"
-        options={{ title: 'Markets', tabBarIcon: ({ color }) => <TabIcon emoji="📈" color={color} /> }}
+        options={{
+          title: isCodr ? 'News' : 'Markets',
+          tabBarIcon: ({ color }) => <TabIcon emoji={isCodr ? '📰' : '📈'} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="practice"
-        options={{ title: 'Practice', tabBarIcon: ({ color }) => <TabIcon emoji="⚡" color={color} /> }}
+        options={{
+          title: 'Practice',
+          tabBarIcon: ({ color }) => <TabIcon emoji={isCodr ? '💻' : '⚡'} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="leaderboard"

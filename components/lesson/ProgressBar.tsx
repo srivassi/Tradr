@@ -1,30 +1,34 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, spacing } from '../../constants/theme';
+import { colors, spacing, typography } from '../../constants/theme';
 
 interface Props {
   current: number;
   total: number;
   hearts: number;
   onExit: () => void;
+  lessonName?: string;
 }
 
-export default function ProgressBar({ current, total, hearts, onExit }: Props) {
+export default function ProgressBar({ current, total, hearts, onExit, lessonName }: Props) {
   const progress = Math.min((current - 1) / total, 1);
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onExit} style={styles.exitBtn} accessibilityLabel="Exit lesson">
-        <Text style={styles.exitIcon}>✕</Text>
-      </TouchableOpacity>
+      {lessonName && (
+        <Text style={styles.lessonName} numberOfLines={1}>{lessonName}</Text>
+      )}
+      <View style={styles.row}>
+        <TouchableOpacity onPress={onExit} style={styles.exitBtn} accessibilityLabel="Exit lesson">
+          <Text style={styles.exitIcon}>✕</Text>
+        </TouchableOpacity>
 
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${progress * 100}%` }]} />
-      </View>
+        <View style={styles.track}>
+          <View style={[styles.fill, { width: `${progress * 100}%` }]} />
+        </View>
 
-      <View style={styles.hearts}>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Text key={i} style={i < hearts ? styles.heart : styles.heartEmpty}>♥</Text>
-        ))}
+        <Text style={styles.heartsLabel} accessibilityLabel={`${hearts} hearts remaining`}>
+          {hearts} ♥
+        </Text>
       </View>
     </View>
   );
@@ -32,10 +36,22 @@ export default function ProgressBar({ current, total, hearts, onExit }: Props) {
 
 const styles = StyleSheet.create({
   container: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
+    gap: spacing.xs,
+  },
+  lessonName: {
+    fontSize: typography.xs,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
     gap: spacing.sm,
   },
   exitBtn: {
@@ -61,10 +77,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 8,
   },
-  hearts: {
-    flexDirection: 'row',
-    gap: 2,
-  },
-  heart:      { fontSize: 16, color: colors.danger },
-  heartEmpty: { fontSize: 16, color: colors.border },
+  heartsLabel: { fontSize: 16, fontWeight: '700', color: colors.danger, minWidth: 36, textAlign: 'right' },
 });

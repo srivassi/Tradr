@@ -13,6 +13,9 @@ _MARKET_TICKERS = {
         {"ticker": "^FCHI",     "name": "CAC 40"},
         {"ticker": "^AEX",      "name": "AEX"},
         {"ticker": "^STOXX50E", "name": "EURO STOXX 50"},
+        {"ticker": "^IBEX",     "name": "IBEX 35"},
+        {"ticker": "FTSEMIB.MI","name": "FTSE MIB"},
+        {"ticker": "^OMX",      "name": "OMX Stockholm 30"},
     ],
     "us": [
         {"ticker": "^GSPC", "name": "S&P 500"},

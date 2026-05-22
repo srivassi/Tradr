@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { supabase } from '../../lib/supabase';
 import { useUserStore } from '../../store/userStore';
 import { computePath, getCurriculum, getCodrCurriculum } from '../../lib/curriculum';
 import { MARKETS } from '../../constants/markets';
 import { LANGUAGES } from '../../constants/languages';
 import { colors, spacing, typography } from '../../constants/theme';
+import type { TrackId } from '../../types';
 import UnitHeader from '../../components/path/UnitHeader';
 import PathNode from '../../components/path/PathNode';
 import PathTooltip from '../../components/path/PathTooltip';
@@ -60,8 +62,21 @@ export default function LearnScreen() {
   const pendingLanguage  = useUserStore((s) => s.pendingLanguage);
   const setMarket        = useUserStore((s) => s.setMarket);
   const setLanguage      = useUserStore((s) => s.setLanguage);
-  const [selectedNode, setSelectedNode]         = useState<PathNodeType | null>(null);
-  const [pickerOpen, setPickerOpen]             = useState(false);
+  const setTrack         = useUserStore((s) => s.setTrack);
+  const [selectedNode, setSelectedNode] = useState<PathNodeType | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  async function handleTrackPress(pressed: TrackId) {
+    if (track === pressed) {
+      setDropdownOpen((o) => !o);
+    } else {
+      setTrack(pressed);
+      if (user?.id) {
+        await supabase.from('users').update({ track: pressed }).eq('id', user.id);
+      }
+      setDropdownOpen(true);
+    }
+  }
 
   const track    = user?.track    ?? pendingTrack;
   const market   = (user?.market  ?? pendingMarket) as MarketId;
@@ -85,34 +100,42 @@ export default function LearnScreen() {
     router.push(`/lesson/${lessonId}`);
   }
 
-  const pickerLabel = track === 'codr'
-    ? `${LANGUAGES[language].icon}  ${LANGUAGES[language].label}  ▾`
-    : `${MARKETS[market].flag}  ${MARKETS[market].label}  ▾`;
-
-  const pickerTitle = track === 'codr' ? 'Choose your language' : 'Choose your market';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Single header bar */}
+      {/* Single header row */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.marketBtn}
-          onPress={() => setPickerOpen(true)}
-          activeOpacity={0.7}
-          accessibilityLabel={pickerTitle}
-        >
-          <Text style={styles.marketBtnText}>{pickerLabel}</Text>
-        </TouchableOpacity>
+        <View style={styles.trackToggle}>
+          <TouchableOpacity
+            style={[styles.trackBtn, track === 'tradr' && styles.trackBtnActive]}
+            onPress={() => handleTrackPress('tradr')}
+            activeOpacity={0.8}
+            accessibilityLabel="Tradr — tap to choose market"
+          >
+            <Text style={[styles.trackBtnText, track === 'tradr' && styles.trackBtnTextActive]}>
+              📈 Tradr
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.trackBtn, track === 'codr' && styles.trackBtnActive]}
+            onPress={() => handleTrackPress('codr')}
+            activeOpacity={0.8}
+            accessibilityLabel="Codr — tap to choose language"
+          >
+            <Text style={[styles.trackBtnText, track === 'codr' && styles.trackBtnTextActive]}>
+              💻 Codr
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        <View style={styles.stats}>
+        <View style={styles.statsRow}>
           <View style={styles.stat}>
             <Text style={styles.statIcon}>🔥</Text>
             <Text style={styles.statValue}>{streak}</Text>
           </View>
-          <View style={styles.hearts}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Text key={i} style={i < hearts ? styles.heart : styles.heartEmpty}>♥</Text>
-            ))}
+          <View style={styles.stat} accessibilityLabel={`${hearts} hearts remaining`}>
+            <Text style={[styles.statIcon, { color: colors.danger }]}>♥</Text>
+            <Text style={[styles.statValue, { color: colors.danger }]}>{hearts}</Text>
           </View>
           <View style={styles.stat}>
             <Text style={styles.statIcon}>⚡</Text>
@@ -121,48 +144,43 @@ export default function LearnScreen() {
         </View>
       </View>
 
+      {/* Inline dropdown — market (Tradr) or language (Codr) */}
+      {dropdownOpen && (
+        <View style={styles.dropdown}>
+          {track === 'tradr'
+            ? (Object.values(MARKETS) as typeof MARKETS[MarketId][]).map((m) => (
+                <TouchableOpacity
+                  key={m.id}
+                  style={[styles.dropdownOption, market === m.id && styles.dropdownOptionActive]}
+                  onPress={() => { setMarket(m.id as MarketId); setDropdownOpen(false); }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.dropdownFlag}>{m.flag}</Text>
+                  <Text style={[styles.dropdownLabel, market === m.id && styles.dropdownLabelActive]}>
+                    {m.label}
+                  </Text>
+                  {market === m.id && <Text style={styles.tick}>✓</Text>}
+                </TouchableOpacity>
+              ))
+            : (Object.values(LANGUAGES) as typeof LANGUAGES[LanguageId][]).map((l) => (
+                <TouchableOpacity
+                  key={l.id}
+                  style={[styles.dropdownOption, language === l.id && styles.dropdownOptionActive]}
+                  onPress={() => { setLanguage(l.id as LanguageId); setDropdownOpen(false); }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.dropdownFlag}>{l.icon}</Text>
+                  <Text style={[styles.dropdownLabel, language === l.id && styles.dropdownLabelActive]}>
+                    {l.label}
+                  </Text>
+                  {language === l.id && <Text style={styles.tick}>✓</Text>}
+                </TouchableOpacity>
+              ))
+          }
+        </View>
+      )}
+
       <View style={styles.divider} />
-
-      {/* Market / Language picker modal */}
-      <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
-        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setPickerOpen(false)}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>{pickerTitle}</Text>
-
-            {track === 'tradr'
-              ? (Object.values(MARKETS) as typeof MARKETS[MarketId][]).map((m) => (
-                  <TouchableOpacity
-                    key={m.id}
-                    style={[styles.marketOption, market === m.id && styles.marketOptionActive]}
-                    onPress={() => { setMarket(m.id as MarketId); setPickerOpen(false); }}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.marketOptionFlag}>{m.flag}</Text>
-                    <Text style={[styles.marketOptionLabel, market === m.id && styles.marketOptionLabelActive]}>
-                      {m.label}
-                    </Text>
-                    {market === m.id && <Text style={styles.tick}>✓</Text>}
-                  </TouchableOpacity>
-                ))
-              : (Object.values(LANGUAGES) as typeof LANGUAGES[LanguageId][]).map((l) => (
-                  <TouchableOpacity
-                    key={l.id}
-                    style={[styles.marketOption, language === l.id && styles.marketOptionActive]}
-                    onPress={() => { setLanguage(l.id as LanguageId); setPickerOpen(false); }}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.marketOptionFlag}>{l.icon}</Text>
-                    <Text style={[styles.marketOptionLabel, language === l.id && styles.marketOptionLabelActive]}>
-                      {l.label}
-                    </Text>
-                    {language === l.id && <Text style={styles.tick}>✓</Text>}
-                  </TouchableOpacity>
-                ))
-            }
-          </View>
-        </TouchableOpacity>
-      </Modal>
 
       <ScrollView
         style={styles.scroll}
@@ -216,75 +234,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  stat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  statIcon:   { fontSize: 20 },
-  statValue:  { fontSize: typography.base, fontWeight: '800', color: colors.textPrimary },
-  hearts:     { flexDirection: 'row', gap: 2 },
-  heart:      { fontSize: 16, color: colors.danger },
-  heartEmpty: { fontSize: 16, color: colors.border },
-
-  divider: { height: 1, backgroundColor: colors.border },
-
-  marketBtn: {
+  trackToggle: {
+    flexDirection: 'row',
     backgroundColor: colors.surface,
     borderRadius: 20,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
     borderWidth: 1.5,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
-  marketBtnText: {
-    fontSize: typography.sm,
-    fontWeight: '700',
-    color: colors.textPrimary,
+  trackBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 7,
   },
-  stats: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  trackBtnActive:     { backgroundColor: colors.primary },
+  trackBtnText:       { fontSize: typography.sm, fontWeight: '700', color: colors.textSecondary },
+  trackBtnTextActive: { fontSize: typography.sm, fontWeight: '700', color: '#fff' },
 
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'flex-end',
+  statsRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  stat:      { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  statIcon:  { fontSize: 16 },
+  statValue: { fontSize: typography.sm, fontWeight: '800', color: colors.textPrimary },
+
+  dropdown: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+    gap: spacing.xs,
   },
-  modalSheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
-    gap: spacing.sm,
-  },
-  modalHandle: {
-    width: 40, height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: spacing.sm,
-  },
-  modalTitle: {
-    fontSize: typography.lg,
-    fontWeight: '900',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  marketOption: {
+  dropdownOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: 16,
-    borderWidth: 2,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1.5,
     borderColor: colors.border,
     backgroundColor: colors.surface,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
-  marketOptionActive: {
+  dropdownOptionActive: {
     borderColor: colors.primary,
     backgroundColor: '#F0FBE4',
   },
-  marketOptionFlag:  { fontSize: 28 },
-  marketOptionLabel: { flex: 1, fontSize: typography.base, fontWeight: '700', color: colors.textPrimary },
-  marketOptionLabelActive: { color: colors.primary },
+  dropdownFlag:  { fontSize: 22 },
+  dropdownLabel: { flex: 1, fontSize: typography.sm, fontWeight: '700', color: colors.textPrimary },
+  dropdownLabelActive: { color: colors.primary },
+
+  divider: { height: 1, backgroundColor: colors.border },
+
   tick: { fontSize: 18, color: colors.primary, fontWeight: '800' },
 
   scroll:        { flex: 1 },
