@@ -7,7 +7,7 @@ import Constants from 'expo-constants';
  * host won't contain "localhost" and the URL is used as-is.
  */
 function resolveBackendUrl(): string {
-  const env = process.env.EXPO_PUBLIC_BACKEND_URL ?? 'http://localhost:8000';
+  const env = process.env.EXPO_PUBLIC_BACKEND_URL ?? 'https://mastr-backend.onrender.com';
 
   if (!env.includes('localhost')) return env;
 
