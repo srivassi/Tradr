@@ -7,6 +7,7 @@ import { useUserStore } from '../../store/userStore';
 import { getLesson } from '../../lib/lessonData';
 import { BACKEND } from '../../lib/backend';
 import ProgressBar from '../../components/lesson/ProgressBar';
+import Pip from '../../components/pip/Pip';
 import MultipleChoice from '../../components/lesson/MultipleChoice';
 import AnswerFooter from '../../components/lesson/AnswerFooter';
 import ChartQuestion from '../../components/lesson/ChartQuestion';
@@ -140,7 +141,16 @@ export default function LessonScreen() {
         {question.codeSnippet && (
           <CodeBlock code={question.codeSnippet} language={question.codeLanguage} />
         )}
-        <FormattedText text={question.question} style={styles.question} />
+        <View style={styles.questionRow}>
+          <FormattedText text={question.question} style={[styles.question, { flex: 1 }]} />
+          <View style={styles.pipSide}>
+            <Pip
+              level={user?.level ?? 1}
+              mood={answerState === 'correct' ? 'correct' : answerState === 'wrong' ? 'wrong' : 'idle'}
+              size={88}
+            />
+          </View>
+        </View>
       </ScrollView>
 
       <MultipleChoice
@@ -164,7 +174,18 @@ export default function LessonScreen() {
 
 const styles = StyleSheet.create({
   container:    { flex: 1, backgroundColor: colors.background },
-  scroll:       { flex: 1 },
+  scroll: { flex: 1 },
+  questionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  pipSide: {
+    width: 88,
+    height: 88,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
   scrollContent: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,

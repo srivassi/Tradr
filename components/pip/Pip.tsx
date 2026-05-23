@@ -20,17 +20,17 @@ interface PipProps {
 }
 
 const STAGE_IMAGES = {
-  bear:     require('../../assets/pip/pip_stage1_bear.png'),
-  cubBull:  require('../../assets/pip/pip_stage2_cub.png'),
-  halfBull: require('../../assets/pip/pip_stage3_junior_bull.png'),
-  bull:     require('../../assets/pip/pip_stage4_golden_bull.png'),
+  bear:     require('../../assets/pip/pip_stage1_bear-removebg-preview.png'),
+  cubBull:  require('../../assets/pip/pip_stage2_cub-removebg-preview.png'),
+  halfBull: require('../../assets/pip/pip_stage3_junior_bull-removebg-preview.png'),
+  bull:     require('../../assets/pip/pip_stage4_golden_bull-removebg-preview.png'),
 };
 
 const MOOD_IMAGES: Partial<Record<PipMood, ReturnType<typeof require>>> = {
-  correct:   require('../../assets/pip/pip_mood_correct.png'),
-  wrong:     require('../../assets/pip/pip_mood_wrong.png'),
-  celebrate: require('../../assets/pip/pip_mood_celebrate.png'),
-  levelup:   require('../../assets/pip/pip_mood_celebrate.png'),
+  correct:   require('../../assets/pip/pip_mood_correct-removebg-preview.png'),
+  wrong:     require('../../assets/pip/pip_mood_wrong-removebg-preview.png'),
+  celebrate: require('../../assets/pip/pip_mood_celebrate-removebg-preview.png'),
+  levelup:   require('../../assets/pip/pip_mood_celebrate-removebg-preview.png'),
 };
 
 function getImage(level: number, mood: PipMood) {
@@ -71,12 +71,14 @@ export default function Pip({ level, mood, size = 120 }: PipProps) {
 
       case 'correct':
         translateY.value = withSequence(
-          withSpring(-28, { damping: 6, stiffness: 200 }),
-          withSpring(0,   { damping: 8, stiffness: 150 }),
+          withTiming(-16, { duration: 140, easing: Easing.out(Easing.quad) }),
+          withTiming(0,   { duration: 120, easing: Easing.in(Easing.quad) }),
+          withTiming(-8,  { duration: 100, easing: Easing.out(Easing.quad) }),
+          withTiming(0,   { duration: 100, easing: Easing.in(Easing.quad) }),
         );
         scale.value = withSequence(
-          withSpring(1.15, { damping: 6 }),
-          withSpring(1,    { damping: 8 }),
+          withTiming(1.12, { duration: 140 }),
+          withTiming(1,    { duration: 220 }),
         );
         break;
 

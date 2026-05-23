@@ -7,7 +7,7 @@ import hashlib
 import logging
 import os
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import httpx
 
@@ -322,7 +322,12 @@ async def _fetch_hn_top(n: int = 10) -> list[dict]:
 
 
 async def get_tech_headlines(page_size: int = 10) -> list[dict]:
-    """Return tech headlines. Priority: TechCrunch RSS → The Verge RSS → HN API → mock."""
+    """Return tech headlines. Cached per calendar day."""
+    today = date.today()
+    cached = _DAILY_CACHE.get("tech")
+    if cached and cached[0] == today:
+        return cached[1]
+
     for url in _TECH_RSS_FEEDS:
         try:
             async with httpx.AsyncClient(
@@ -334,16 +339,19 @@ async def get_tech_headlines(page_size: int = 10) -> list[dict]:
             if resp.status_code == 200:
                 items = _parse_rss(resp.text)
                 if items:
-                    return items[:page_size]
+                    result = items[:page_size]
+                    _DAILY_CACHE["tech"] = (today, result)
+                    return result
         except httpx.RequestError as exc:
             logger.warning("Tech RSS fetch failed for %s: %s", url, exc)
 
     hn = await _fetch_hn_top(page_size)
     if hn:
+        _DAILY_CACHE["tech"] = (today, hn)
         return hn
 
     now = datetime.now(timezone.utc).isoformat()
-    return [
+    mock = [
         {
             "id": hashlib.md5(h["title"].encode()).hexdigest()[:12],
             "title": h["title"],
@@ -354,6 +362,8 @@ async def get_tech_headlines(page_size: int = 10) -> list[dict]:
         }
         for h in _TECH_MOCK
     ]
+    _DAILY_CACHE["tech"] = (today, mock)
+    return mock
 
 
 def _mock(market: str) -> list[dict]:
@@ -372,24 +382,40 @@ def _mock(market: str) -> list[dict]:
     ]
 
 
+# (market | "tech") -> (date, headlines)
+_DAILY_CACHE: dict[str, tuple[date, list[dict]]] = {}
+
+
 async def get_headlines(market: str, page_size: int = 10) -> list[dict]:
-    """Return headlines for the given market. Priority: GNews → NewsAPI → RSS → mock."""
+    """Return headlines for the given market. Cached per calendar day."""
+    today = date.today()
+    cached = _DAILY_CACHE.get(market)
+    if cached and cached[0] == today:
+        return cached[1]
+
     if _GNEWS_KEY:
         try:
             items = await _fetch_gnews(market, page_size)
-            return _filter_by_market(items, market)
+            result = _filter_by_market(items, market)
+            _DAILY_CACHE[market] = (today, result)
+            return result
         except Exception as exc:
             logger.warning("GNews failed: %s", exc)
 
     if _NEWSAPI_KEY:
         try:
             items = await _fetch_newsapi(market, page_size)
-            return _filter_by_market(items, market)
+            result = _filter_by_market(items, market)
+            _DAILY_CACHE[market] = (today, result)
+            return result
         except Exception as exc:
             logger.warning("NewsAPI failed: %s", exc)
 
     rss = await _fetch_rss(market)
     if rss:
+        _DAILY_CACHE[market] = (today, rss)
         return rss
 
-    return _mock(market)
+    mock = _mock(market)
+    _DAILY_CACHE[market] = (today, mock)
+    return mock

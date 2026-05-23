@@ -1,6 +1,7 @@
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, time as dtime
 from functools import lru_cache
+from zoneinfo import ZoneInfo
 
 _MARKET_TICKERS = {
     "india": [
@@ -51,6 +52,27 @@ _SECTOR_TICKERS = {
 }
 
 
+# Market trading hours — used to skip API calls after close
+_MARKET_HOURS: dict[str, dict] = {
+    "india": {"tz": ZoneInfo("Asia/Kolkata"),     "open": dtime(9, 15),  "close": dtime(15, 30)},
+    "us":    {"tz": ZoneInfo("America/New_York"),  "open": dtime(9, 30),  "close": dtime(16, 0)},
+    "eu":    {"tz": ZoneInfo("Europe/Berlin"),     "open": dtime(9, 0),   "close": dtime(17, 30)},
+}
+
+
+def _cache_key(market_id: str) -> str:
+    """10-min bucket during market hours; day-level key when closed/weekend."""
+    config = _MARKET_HOURS.get(market_id)
+    if not config:
+        return datetime.now().strftime("%Y-%m-%d-%H-%M")[:-1] + "0"
+
+    now = datetime.now(config["tz"])
+    if now.weekday() >= 5 or not (config["open"] <= now.time() <= config["close"]):
+        return now.strftime("%Y-%m-%d-closed")
+
+    return now.strftime("%Y-%m-%d-%H-") + str(now.minute // 10)
+
+
 @lru_cache(maxsize=256)
 def _get_quote_cached(ticker: str, cache_key: str) -> dict:
     stock = yf.Ticker(ticker)
@@ -68,9 +90,8 @@ def _get_quote_cached(ticker: str, cache_key: str) -> dict:
     }
 
 
-def get_quote(ticker: str) -> dict:
-    cache_key = datetime.now().strftime("%Y-%m-%d-%H-%M")[:-1] + "0"  # 10-min buckets
-    return _get_quote_cached(ticker, cache_key)
+def get_quote(ticker: str, market_id: str = "") -> dict:
+    return _get_quote_cached(ticker, _cache_key(market_id))
 
 
 def get_market_indices(market_id: str) -> list[dict]:
@@ -78,7 +99,7 @@ def get_market_indices(market_id: str) -> list[dict]:
     results = []
     for t in tickers:
         try:
-            quote = get_quote(t["ticker"])
+            quote = get_quote(t["ticker"], market_id)
             results.append({"name": t["name"], **quote})
         except Exception:
             results.append({"name": t["name"], "ticker": t["ticker"], "error": True})
@@ -90,7 +111,7 @@ def get_sector_performance(market_id: str) -> list[dict]:
     results = []
     for name, ticker in sectors.items():
         try:
-            quote = get_quote(ticker)
+            quote = get_quote(ticker, market_id)
             results.append({"sector": name, "change_pct": quote["change_pct"]})
         except Exception:
             results.append({"sector": name, "change_pct": 0.0, "error": True})

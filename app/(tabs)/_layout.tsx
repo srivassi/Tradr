@@ -25,7 +25,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Learn', tabBarIcon: ({ color }) => <TabIcon emoji="🏠" color={color} /> }}
+        options={{ title: 'Learn', tabBarIcon: ({ color }) => <TabIcon emoji="⭐" color={color} /> }}
       />
       <Tabs.Screen
         name="markets"

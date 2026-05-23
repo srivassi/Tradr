@@ -33,8 +33,28 @@ function IndexCard({ quote, currency }: { quote: MarketQuote; currency: string }
   const changeColor = isUp ? colors.bullGreen : colors.bearRed;
   const arrow = isUp ? '▲' : '▼';
 
+  const flashAnim = useRef(new Animated.Value(0)).current;
+  const prevPrice = useRef<number | null>(null);
+  const [flashUp, setFlashUp] = useState(true);
+
+  useEffect(() => {
+    if (prevPrice.current === null) { prevPrice.current = quote.price; return; }
+    if (prevPrice.current === quote.price) return;
+    setFlashUp(quote.price > prevPrice.current);
+    prevPrice.current = quote.price;
+    flashAnim.setValue(1);
+    Animated.timing(flashAnim, { toValue: 0, duration: 900, useNativeDriver: true }).start();
+  }, [quote.price]);
+
   return (
     <View style={styles.indexCard}>
+      <Animated.View
+        style={[StyleSheet.absoluteFill, {
+          backgroundColor: flashUp ? '#D7FFB8' : '#FFDFE0',
+          opacity: flashAnim,
+          borderRadius: 16,
+        }]}
+      />
       <View style={styles.indexCardLeft}>
         <Text style={styles.indexName}>{quote.name}</Text>
         <Text style={styles.indexPrice}>
@@ -398,7 +418,11 @@ function TradrMarketsView() {
     }
   }
 
-  useEffect(() => { load(); }, [market]);
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => load(true), 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [market]);
 
   function handleExplain(h: Headline & { body_snippet?: string }) {
     setExplainTarget(h);

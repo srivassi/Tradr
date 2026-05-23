@@ -2,6 +2,7 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PIP_STAGES } from '../../constants/pip';
+import Pip from '../../components/pip/Pip';
 import { colors, spacing, typography } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
 import { useUserStore } from '../../store/userStore';
@@ -115,11 +116,7 @@ export default function ProfileScreen() {
         {/* Pip + Level */}
         <View style={styles.pipCard}>
           <View style={[styles.pipCircle, { borderColor: stage.tint }]}>
-            <Text style={styles.pipEmoji}>
-              {user.pipStage === 'bear'     ? '🐻' :
-               user.pipStage === 'cubBull'  ? '🐻' :
-               user.pipStage === 'halfBull' ? '🐂' : '🐂'}
-            </Text>
+            <Pip level={user.level} mood="idle" size={52} />
           </View>
           <View style={styles.pipInfo}>
             <Text style={styles.pipUsername}>{user.username}</Text>

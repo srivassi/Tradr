@@ -13,9 +13,9 @@ interface Props {
 
 function nodeIcon(state: NodeState, isQuiz: boolean): string {
   if (state === 'complete') return '⭐';
-  if (state === 'locked')   return '🔒';
+  if (state === 'locked')   return isQuiz ? '👑' : '🔒';
   if (isQuiz)               return '👑';
-  return '🐻';
+  return '▶';
 }
 
 export default function PathNode({ state, isQuiz, onPress }: Props) {

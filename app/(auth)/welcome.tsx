@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Pip from '../../components/pip/Pip';
 
 export default function WelcomeScreen() {
   return (
@@ -13,7 +14,9 @@ export default function WelcomeScreen() {
         </View>
 
         <View style={styles.middle}>
-          <Text style={styles.bear}>🐻</Text>
+          <View style={styles.pipContainer}>
+            <Pip level={1} mood="idle" size={160} />
+          </View>
           <View style={styles.tracks}>
             <View style={styles.trackPill}>
               <Text style={styles.trackIcon}>📈</Text>
@@ -79,9 +82,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 24,
   },
-  bear: {
-    fontSize: 110,
-    textAlign: 'center',
+  pipContainer: {
+    width: 160,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tracks: {
     flexDirection: 'row',

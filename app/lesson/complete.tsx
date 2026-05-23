@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { Animated, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Pip from '../../components/pip/Pip';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, typography } from '../../constants/theme';
 import { useUserStore } from '../../store/userStore';
 import { QUIZ_PASS_THRESHOLD } from '../../lib/curriculum';
 import { completeLesson } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 
 interface Message { heading: string; sub: string; pip: string }
 
@@ -51,9 +53,35 @@ export default function LessonCompleteScreen() {
         });
         syncFromServer(result.new_xp, result.new_level, result.streak_days);
       } catch {
-        // Backend unreachable — fall back to local state
+        // Backend unreachable — update local state and write directly to Supabase
         addXP(xpNum);
         incrementStreak();
+        if (user?.id) {
+          const newXP    = user.xp + xpNum;
+          const newLevel = Math.min(Math.floor(newXP / 100) + 1, 50);
+          const today    = new Date().toISOString().split('T')[0];
+          const newStreak = user.lastActive === today ? user.streakDays : user.streakDays + 1;
+
+          await Promise.all([
+            supabase.from('lesson_progress').upsert({
+              user_id:      user.id,
+              lesson_id:    lessonId,
+              track:        user.track ?? 'tradr',
+              market:       user.market ?? 'india',
+              completed:    true,
+              score:        correctNum,
+              xp_earned:    xpNum,
+              perfect,
+              completed_at: new Date().toISOString(),
+            }, { onConflict: 'user_id,lesson_id' }),
+            supabase.from('users').update({
+              xp:          newXP,
+              level:       newLevel,
+              streak_days: newStreak,
+              last_active: today,
+            }).eq('id', user.id),
+          ]);
+        }
       }
     })();
   }, [lessonId, quizPassed]);
@@ -89,11 +117,9 @@ export default function LessonCompleteScreen() {
       <View style={styles.inner}>
 
         {/* Pip hero */}
-        <View style={styles.pipBg}>
-          <Animated.Text style={[styles.pip, { transform: [{ scale: pipScale }] }]}>
-            {msg.pip}
-          </Animated.Text>
-        </View>
+        <Animated.View style={[styles.pipBg, { transform: [{ scale: pipScale }] }]}>
+          <Pip level={user?.level ?? 1} mood="celebrate" size={120} />
+        </Animated.View>
 
         {/* Heading + sub */}
         <Animated.View style={[
