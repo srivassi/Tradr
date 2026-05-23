@@ -1,84 +1,93 @@
 # Mastr
 
-Gamified learning platform. Duolingo's UI and habit loop — applied to finance and coding.
+> Master finance. Ace interviews.
 
-Mobile-first (Expo Go, install via QR). Two tracks: **Tradr** (markets) and **Codr** (DSA/interviews).
-
----
-
-## What is this?
-
-Mastr is a gamified learning platform for the 18–26 year old who finds both investing and technical interviews intimidating. Pick your track on onboarding — or do both and become a quant.
-
-**📈 Tradr** — stock market education, multi-market (India 🇮🇳 / EU 🇪🇺 / US 🇺🇸)
-- Structured lesson paths (beginner → advanced, unit-by-unit unlock)
-- Live market data via yfinance (Nifty 50, DAX, S&P 500)
-- Scenario engine — real recent events turned into coached questions
-- Media literacy curriculum — Unit 3+ teaches users to read headlines critically
-- AI explanations via Claude (wrong answers, headlines, deep dives)
-
-**💻 Codr** — DSA patterns and coding interview prep (Python 🐍 / Java ☕)
-- Arrays & Hashing, Two Pointers, Sliding Window, Stack/Queue, Binary Search, Trees
-- Language-specific units (Pythonic patterns vs Java data structures)
-- Fill-in-the-blank code exercises, spot-the-bug, approach ordering
-- Interview simulation scenarios
-
-**Both tracks share:** Pip the mascot (bear cub → golden bull), XP, streaks, hearts, leagues, badges.
+Duolingo-style gamified learning with two tracks — **Tradr** (stock markets, financial literacy, live market data) and **Codr** (DSA patterns, system design, coding interview prep). Built with Expo + FastAPI + Claude AI.
 
 ---
 
-## Tech Stack
+## Download
+
+### Option A — Expo Go (iOS + Android)
+
+1. Install **Expo Go** from the App Store or Play Store
+2. Open Expo Go and search for `@srivassi/tradr`, or open this link on your phone:
+
+```
+exp.host/@srivassi/tradr
+```
+
+### Option B — Android APK (no Expo Go needed)
+
+Coming soon — run `eas build --platform android --profile preview` to generate.
+
+---
+
+## What's inside
+
+| Track | What you learn |
+|---|---|
+| 📈 Tradr | Stocks, macro, central banks, reading markets — India 🇮🇳 / EU 🇪🇺 / US 🇺🇸 |
+| 💻 Codr | Two pointers, sliding window, trees, graphs, system design, REST APIs |
+
+**Gamification:** XP · Streaks · Hearts · Leagues (Bronze → Obsidian) · Pip the mascot (bear cub → golden bull)
+
+**Live data:** yfinance indices + sector heatmap, auto-refreshing every 5 min during market hours. AI-explained headlines via Claude.
+
+---
+
+## Tech stack
 
 | Layer | Tech |
 |---|---|
 | Mobile | Expo (React Native) + TypeScript |
 | Navigation | Expo Router (file-based) |
-| Animations | React Native Reanimated |
 | State | Zustand |
 | Backend | FastAPI (Python) |
 | Database | Supabase (auth, progress, leaderboard) |
 | AI | Claude API (`claude-sonnet-4-20250514`) |
 | Market data | yfinance |
-| News | NewsAPI / RSS |
+| News | RSS feeds + GNews/NewsAPI |
 
 ---
 
-## Setup
+## Local development
 
 ### Prerequisites
 - Node.js 18+, Python 3.11+
-- `npm install -g expo`
-- Expo Go app on your phone
-- Supabase account (free tier)
+- Expo Go on your phone
+- Supabase project (free tier)
 - Anthropic API key
 
-### Run
+### Frontend
 
 ```bash
 git clone https://github.com/srivassi/mastr && cd mastr
-
-# Frontend
 npm install
-cp .env.example .env.local
-npx expo start    # scan QR with Expo Go
-
-# Backend
-cd backend
-python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn main:app --reload
+cp .env.example .env.local   # fill in Supabase keys
+npx expo start               # scan QR with Expo Go
 ```
 
-### Environment Variables
+### Backend
+
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate        # Windows
+pip install -r requirements.txt
+cp .env.example .env         # fill in keys
+python -m uvicorn main:app --reload --host 0.0.0.0
+```
+
+### Environment variables
 
 ```bash
 # .env.local (frontend)
 EXPO_PUBLIC_SUPABASE_URL=
 EXPO_PUBLIC_SUPABASE_ANON_KEY=
-EXPO_PUBLIC_BACKEND_URL=http://localhost:8000
+EXPO_PUBLIC_BACKEND_URL=http://localhost:8000   # omit to use production backend
 
-# backend/.env
+# .env (backend)
 ANTHROPIC_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_KEY=
@@ -87,29 +96,31 @@ ENVIRONMENT=development
 
 ---
 
-## Project Structure
+## Deployment
+
+| Service | Platform | Notes |
+|---|---|---|
+| Backend | [Render](https://render.com) | Auto-deploys from `main` via `render.yaml` |
+| Frontend | Expo EAS | `eas update --branch production --message "..."` |
+
+Live backend: `https://mastr-backend.onrender.com`
+
+---
+
+## Project structure
 
 ```
-mastr/
-├── app/                    # Expo Router screens
-│   ├── (auth)/             # welcome, onboarding (track + market/language), login, signup
-│   ├── (tabs)/             # Learn, Markets, Practice, League, Profile
-│   ├── lesson/[id].tsx     # question-by-question lesson flow
-│   └── scenario/[id].tsx
-├── components/             # UI (lesson, path map, gamification, markets)
-├── backend/                # FastAPI
-│   ├── routers/            # lessons, scenarios, markets, news, users, leaderboard
-│   ├── services/           # claude_service, market_service, sm2, scenario_builder
-│   └── models/
-├── content/                # Lesson JSON (source of truth)
-│   ├── markets/            # shared, india, eu, us
-│   └── code/               # unit_1–unit_5 shared DSA, language-specific units
-├── lib/                    # curriculum.ts, lessonData.ts, supabase.ts
-├── store/                  # Zustand (userStore — XP, streak, hearts, track, market)
-├── constants/              # theme, markets, languages, pip
-└── types/
+app/          Expo Router screens (auth, tabs, lesson, scenario)
+components/   Reusable UI (pip/, lesson/, path/, markets/, gamification/)
+backend/      FastAPI — routers/, services/, models/
+lib/          Frontend utilities (supabase, backend URL, lesson data)
+store/        Zustand state (userStore)
+constants/    Theme, markets, pip stages
+assets/pip/   Pip mascot PNGs (7 images, transparent background)
 ```
 
 ---
 
-> **Disclaimer:** Mastr is for educational purposes only. Nothing here constitutes financial advice.
+## Disclaimer
+
+Mastr is for educational purposes only. Nothing in this app constitutes financial advice.
