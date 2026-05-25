@@ -29,6 +29,7 @@ export async function completeLesson(
     perfect:   boolean;
     is_quiz:   boolean;
     track:     string;
+    market:    string;
   },
 ): Promise<CompleteResponse> {
   const headers = await authHeaders();

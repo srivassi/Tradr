@@ -73,6 +73,11 @@ function BadgeItem({
       <Text style={[styles.badgeName, !earned && styles.badgeNameLocked]} numberOfLines={2}>
         {earned ? badge.name : '???'}
       </Text>
+      {earned && (
+        <Text style={styles.badgeCondition} numberOfLines={2}>
+          {badge.condition}
+        </Text>
+      )}
     </View>
   );
 }
@@ -269,6 +274,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   badgeNameLocked: { color: colors.textSecondary },
+  badgeCondition: {
+    fontSize: 9,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 13,
+  },
 
   disclaimer: {
     fontSize: typography.xs,

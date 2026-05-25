@@ -169,6 +169,54 @@ export function getCurriculum(market: MarketId): CurriculumUnit[] {
   return [...SHARED_UNITS, ...MARKET_UNITS[market]];
 }
 
+export const SHARED_LESSON_IDS: Set<string> = new Set(
+  SHARED_UNITS.flatMap((u) => u.lessons.map((l) => l.id)),
+);
+
+// Returns lesson IDs to pre-complete based on placement score
+export function getTradrSkipLessons(score: number): string[] {
+  if (score >= 5) return SHARED_UNITS.flatMap((u) => u.lessons.map((l) => l.id));
+  if (score >= 3) return SHARED_UNITS.slice(0, 2).flatMap((u) => u.lessons.map((l) => l.id));
+  return [];
+}
+
+export function getCodrSkipLessons(score: number, language: LanguageId): string[] {
+  if (score >= 4) return LANGUAGE_UNITS[language][0].lessons.map((l) => l.id);
+  return [];
+}
+
+export interface TradrPath {
+  foundation: PathUnit[];
+  mastery: PathUnit[];
+  foundationComplete: boolean;
+}
+
+export function computeTradrPath(completedLessons: string[], market: MarketId): TradrPath {
+  const foundation = computePath(completedLessons, SHARED_UNITS);
+
+  const lastFoundationQuiz = SHARED_UNITS[SHARED_UNITS.length - 1].lessons.find((l) => l.isQuiz);
+  const foundationComplete = lastFoundationQuiz
+    ? new Set(completedLessons).has(lastFoundationQuiz.id)
+    : false;
+
+  const mastery = foundationComplete
+    ? computePath(completedLessons, MARKET_UNITS[market])
+    : MARKET_UNITS[market].map((unit) => ({
+        unit,
+        nodes: unit.lessons.map((lesson) => ({
+          lessonId:      lesson.id,
+          name:          lesson.name,
+          xpReward:      lesson.xpReward,
+          questionCount: lesson.questionCount,
+          state:         'locked' as NodeState,
+          isQuiz:        lesson.isQuiz ?? false,
+        })),
+        unitLocked: true,
+      }));
+
+  return { foundation, mastery, foundationComplete };
+}
+
 // ─── Codr Curriculum ─────────────────────────────────────────────────────────
 // Structure matches CLAUDE.md: Unit 1 = language foundations (language-specific,
 // comes first), Units 2–5 = shared DSA → complexity → system design → interview skills.

@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import type { MarketId as MId } from '../../types';
 import { useUserStore } from '../../store/userStore';
-import { computePath, getCurriculum, getCodrCurriculum } from '../../lib/curriculum';
+import { computePath, computeTradrPath, getCodrCurriculum, SHARED_LESSON_IDS } from '../../lib/curriculum';
+import type { TradrPath } from '../../lib/curriculum';
 import { MARKETS } from '../../constants/markets';
 import { LANGUAGES } from '../../constants/languages';
 import { colors, spacing, typography } from '../../constants/theme';
@@ -54,15 +56,34 @@ function PathConnector({ fromIndex, complete }: { fromIndex: number; complete: b
   );
 }
 
+function MasteryDivider({ complete, marketLabel }: { complete: boolean; marketLabel: string }) {
+  return (
+    <View style={styles.masteryDivider}>
+      <View style={styles.masteryDividerLine} />
+      <View style={[styles.masteryDividerBadge, complete ? styles.masteryDividerBadgeComplete : styles.masteryDividerBadgeLocked]}>
+        <Text style={[styles.masteryDividerText, complete ? styles.masteryDividerTextComplete : styles.masteryDividerTextLocked]}>
+          {complete
+            ? `✓ Foundation done — ${marketLabel} Mastery unlocked`
+            : '🔒 Complete Foundation to unlock Market Mastery'}
+        </Text>
+      </View>
+      <View style={styles.masteryDividerLine} />
+    </View>
+  );
+}
+
 export default function LearnScreen() {
   const user             = useUserStore((s) => s.user);
   const completedLessons = useUserStore((s) => s.completedLessons);
   const pendingTrack     = useUserStore((s) => s.pendingTrack);
   const pendingMarket    = useUserStore((s) => s.pendingMarket);
   const pendingLanguage  = useUserStore((s) => s.pendingLanguage);
-  const setMarket        = useUserStore((s) => s.setMarket);
-  const setLanguage      = useUserStore((s) => s.setLanguage);
-  const setTrack         = useUserStore((s) => s.setTrack);
+  const setMarket               = useUserStore((s) => s.setMarket);
+  const setLanguage             = useUserStore((s) => s.setLanguage);
+  const setTrack                = useUserStore((s) => s.setTrack);
+  const pendingSkipLessons      = useUserStore((s) => s.pendingSkipLessons);
+  const clearPendingSkipLessons = useUserStore((s) => s.clearPendingSkipLessons);
+  const setCompletedLessons     = useUserStore((s) => s.setCompletedLessons);
   const [selectedNode, setSelectedNode] = useState<PathNodeType | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -82,24 +103,75 @@ export default function LearnScreen() {
   const market   = (user?.market  ?? pendingMarket) as MarketId;
   const language = (user?.language ?? pendingLanguage) as LanguageId;
 
-  const curriculum = useMemo(
-    () => track === 'codr' ? getCodrCurriculum(language) : getCurriculum(market),
-    [track, market, language],
+  const tradrPath = useMemo<TradrPath | null>(
+    () => track === 'tradr' ? computeTradrPath(completedLessons, market) : null,
+    [track, completedLessons, market],
   );
-  const path = useMemo(
-    () => computePath(completedLessons, curriculum),
-    [completedLessons, curriculum],
+  const codrPath = useMemo(
+    () => track === 'codr' ? computePath(completedLessons, getCodrCurriculum(language)) : null,
+    [track, completedLessons, language],
   );
 
   const streak = user?.streakDays ?? 0;
   const hearts = user?.hearts     ?? 5;
   const xp     = user?.xp         ?? 0;
 
+  // Write placement-skip lessons to Supabase on first load after signup
+  useEffect(() => {
+    if (!user?.id || pendingSkipLessons.length === 0) return;
+    const records = pendingSkipLessons.map((lessonId) => ({
+      user_id:      user.id,
+      lesson_id:    lessonId,
+      track:        user.track,
+      market:       SHARED_LESSON_IDS.has(lessonId) ? 'shared' : (user.market as MId),
+      completed:    true,
+      score:        0,
+      xp_earned:    0,
+      perfect:      false,
+      completed_at: new Date().toISOString(),
+    }));
+    void supabase
+      .from('lesson_progress')
+      .upsert(records, { onConflict: 'user_id,lesson_id' })
+      .then(() => {
+        setCompletedLessons([...new Set([...completedLessons, ...pendingSkipLessons])]);
+        clearPendingSkipLessons();
+      })
+      .catch(() => {
+        setCompletedLessons([...new Set([...completedLessons, ...pendingSkipLessons])]);
+        clearPendingSkipLessons();
+      });
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleStart(lessonId: string) {
     setSelectedNode(null);
     router.push(`/lesson/${lessonId}`);
   }
 
+  function renderPathUnits(units: ReturnType<typeof computeTradrPath>['foundation']) {
+    return units.map(({ unit, nodes, unitLocked }) => (
+      <View key={unit.id}>
+        <UnitHeader title={unit.title} locked={unitLocked} />
+        {nodes.map((node, i) => (
+          <View key={node.lessonId}>
+            <View style={[styles.nodeRow, { paddingLeft: nodeX(i) }]}>
+              <PathNode
+                state={node.state}
+                isQuiz={node.isQuiz}
+                onPress={() => setSelectedNode(node)}
+              />
+            </View>
+            {i < nodes.length - 1 && (
+              <PathConnector
+                fromIndex={i}
+                complete={node.state === 'complete' && nodes[i + 1].state !== 'locked'}
+              />
+            )}
+          </View>
+        ))}
+      </View>
+    ));
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -187,32 +259,18 @@ export default function LearnScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {path.map(({ unit, nodes, unitLocked }) => (
-          <View key={unit.id}>
-            <UnitHeader title={unit.title} locked={unitLocked} />
-
-            {nodes.map((node, i) => (
-              <View key={node.lessonId}>
-                {/* Node */}
-                <View style={[styles.nodeRow, { paddingLeft: nodeX(i) }]}>
-                  <PathNode
-                    state={node.state}
-                    isQuiz={node.isQuiz}
-                    onPress={() => setSelectedNode(node)}
-                  />
-                </View>
-
-                {/* Connector dots to next node (within unit) */}
-                {i < nodes.length - 1 && (
-                  <PathConnector
-                    fromIndex={i}
-                    complete={node.state === 'complete' && nodes[i + 1].state !== 'locked'}
-                  />
-                )}
-              </View>
-            ))}
-          </View>
-        ))}
+        {track === 'tradr' && tradrPath ? (
+          <>
+            {renderPathUnits(tradrPath.foundation)}
+            <MasteryDivider
+              complete={tradrPath.foundationComplete}
+              marketLabel={MARKETS[market].label}
+            />
+            {renderPathUnits(tradrPath.mastery)}
+          </>
+        ) : (
+          codrPath && renderPathUnits(codrPath)
+        )}
 
         <View style={{ height: spacing.xxl }} />
       </ScrollView>
@@ -298,4 +356,38 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   dotComplete: { backgroundColor: colors.primary },
+
+  masteryDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+  },
+  masteryDividerLine: {
+    flex: 1,
+    height: 1.5,
+    backgroundColor: colors.border,
+  },
+  masteryDividerBadge: {
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderWidth: 1.5,
+  },
+  masteryDividerBadgeComplete: {
+    backgroundColor: '#F0FBE4',
+    borderColor: colors.primary,
+  },
+  masteryDividerBadgeLocked: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+  },
+  masteryDividerText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  masteryDividerTextComplete: { color: colors.primary },
+  masteryDividerTextLocked:   { color: colors.textSecondary },
 });

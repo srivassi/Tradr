@@ -10,6 +10,7 @@ interface UserState {
   pendingMarket: MarketId;
   pendingLanguage: LanguageId;
   completedLessons: string[];
+  pendingSkipLessons: string[];
 
   setUser: (user: User) => void;
   clearUser: () => void;
@@ -25,6 +26,8 @@ interface UserState {
   setCompletedLessons: (ids: string[]) => void;
   syncFromServer: (xp: number, level: number, streakDays: number) => void;
   loadProgress: (userId: string) => Promise<void>;
+  setPendingSkipLessons: (ids: string[]) => void;
+  clearPendingSkipLessons: () => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -34,6 +37,7 @@ export const useUserStore = create<UserState>((set) => ({
   pendingMarket: 'india',
   pendingLanguage: 'python',
   completedLessons: [],
+  pendingSkipLessons: [],
 
   setUser: (user) => set({ user, isAuthenticated: true }),
 
@@ -128,6 +132,9 @@ export const useUserStore = create<UserState>((set) => ({
         },
       };
     }),
+
+  setPendingSkipLessons: (ids) => set({ pendingSkipLessons: ids }),
+  clearPendingSkipLessons: () => set({ pendingSkipLessons: [] }),
 
   loadProgress: async (userId) => {
     try {

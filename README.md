@@ -8,18 +8,11 @@ Duolingo-style gamified learning with two tracks — **Tradr** (stock markets, f
 
 ## Download
 
-### Option A — Expo Go (iOS + Android)
+### Android APK (no Expo Go needed)
 
-1. Install **Expo Go** from the App Store or Play Store
-2. Open Expo Go and search for `@srivassi/tradr`, or open this link on your phone:
+Download and install directly on any Android device:
 
-```
-exp.host/@srivassi/tradr
-```
-
-### Option B — Android APK (no Expo Go needed)
-
-Coming soon — run `eas build --platform android --profile preview` to generate.
+[**Download APK**](https://expo.dev/artifacts/eas/i14rNS6Fmn8QRnXjg7poMs.apk)
 
 ---
 

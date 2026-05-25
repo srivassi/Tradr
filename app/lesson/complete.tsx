@@ -7,6 +7,7 @@ import { colors, spacing, typography } from '../../constants/theme';
 import { useUserStore } from '../../store/userStore';
 import { QUIZ_PASS_THRESHOLD } from '../../lib/curriculum';
 import { completeLesson } from '../../lib/api';
+import { SHARED_LESSON_IDS } from '../../lib/curriculum';
 import { supabase } from '../../lib/supabase';
 
 interface Message { heading: string; sub: string; pip: string }
@@ -43,6 +44,7 @@ export default function LessonCompleteScreen() {
     markLessonComplete(lessonId);
     void (async () => {
       try {
+        const lessonMarket = SHARED_LESSON_IDS.has(lessonId) ? 'shared' : user?.market ?? 'india';
         const result = await completeLesson(lessonId, {
           xp_earned: xpNum,
           correct:   correctNum,
@@ -50,6 +52,7 @@ export default function LessonCompleteScreen() {
           perfect,
           is_quiz:   isQuiz === 'true',
           track:     user?.track ?? 'tradr',
+          market:    lessonMarket,
         });
         syncFromServer(result.new_xp, result.new_level, result.streak_days);
       } catch {

@@ -22,6 +22,7 @@ class CompleteRequest(BaseModel):
     perfect:   bool = Field(..., description="All questions answered correctly")
     is_quiz:   bool = Field(..., description="Whether this is a unit quiz")
     track:     str  = Field(..., pattern="^(tradr|codr)$", description="Learning track")
+    market:    str  = Field("shared", description="Market context: india | eu | us | shared (for foundation lessons)")
 
 
 class CompleteResponse(BaseModel):
@@ -149,6 +150,7 @@ async def complete_lesson(
             "user_id":      auth_user.id,
             "lesson_id":    lesson_id,
             "track":        body.track,
+            "market":       body.market,
             "completed":    True,
             "score":        body.correct,
             "xp_earned":    xp_to_award,
